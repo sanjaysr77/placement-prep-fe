@@ -1,8 +1,11 @@
+import Layout from "./Layout";
 import { Home } from "./pages/HomePage";
 
-function App () {
+function App() {
   return <div>
-    <Home />
+    <Layout>
+      <Home />
+    </Layout>
   </div>
 }
 

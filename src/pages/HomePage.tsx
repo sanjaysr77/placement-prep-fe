@@ -2,7 +2,12 @@
 import { CardStructure } from "../components/CardStructure";
 
 export function Home () {
-    return <div className="flex">
+    return <div>
+        <CardStructure />
+        <CardStructure />
+        <CardStructure />
+        <CardStructure />
+        <CardStructure />
         <CardStructure />
     </div>
 }
