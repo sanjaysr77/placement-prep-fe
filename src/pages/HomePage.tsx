@@ -1,9 +1,8 @@
-import { Card } from "../components/Card";
-import { Card2 } from "../components/Card2";
+
+import { CardStructure } from "../components/CardStructure";
 
 export function Home () {
     return <div className="flex">
-        <Card />
-        <Card2 />
+        <CardStructure />
     </div>
 }
