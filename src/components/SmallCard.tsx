@@ -1,12 +1,13 @@
-import { useCardContext } from "./CardContext";
+type SmallCardProps = {
+  image: string;
+  title: string;
+};
 
-export function SmallCard() {
-  const { cardData } = useCardContext();
-
+export function SmallCard({ image, title }: SmallCardProps) {
   return (
-    <div className="flex flex-col items-center p-2 border border-black w-50 bg-gray-400 rounded-lg">
-      <img src={cardData.image} alt={cardData.title} className="w-16 h-16" />
-      <p className="text-lg font-semibold">{cardData.title}</p>
+    <div className="bg-white shadow-md rounded-md p-4 w-28 h-28 flex flex-col items-center justify-center">
+      <img src={image} alt={title} className="w-10 h-10 mb-2" />
+      <span className="text-sm font-medium text-black">{title}</span>
     </div>
   );
 }
