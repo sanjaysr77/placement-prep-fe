@@ -1,4 +1,4 @@
-import { CardStructure } from "../components/CardStructure";
+import { CardStructure } from "../components/CardComponents/CardStructure";
 
 export function Home() {
   const subjects = [
