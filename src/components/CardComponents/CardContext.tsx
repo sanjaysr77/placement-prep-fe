@@ -1,12 +1,12 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
-type CardData = {
+type Subject = {
   image: string;
   title: string;
 };
 
 type CardContextType = {
-  cardData: CardData;
+  subjects: Subject[];
 };
 
 const CardContext = createContext<CardContextType | undefined>(undefined);
@@ -21,13 +21,13 @@ export const useCardContext = () => {
 
 export const CardProvider = ({
   children,
-  cardData,
+  subjects,
 }: {
   children: ReactNode;
-  cardData: CardData;
+  subjects: Subject[];
 }) => {
   return (
-    <CardContext.Provider value={{ cardData }}>
+    <CardContext.Provider value={{ subjects }}>
       {children}
     </CardContext.Provider>
   );

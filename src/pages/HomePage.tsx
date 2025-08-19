@@ -1,4 +1,5 @@
 import { CardStructure } from "../components/CardComponents/CardStructure";
+import { CardProvider } from "../components/CardComponents/CardContext";
 
 export function Home() {
   const subjects = [
@@ -7,9 +8,21 @@ export function Home() {
     { image: "/OS.jpeg", title: "OS" }
   ];
 
+  const company = [
+    { image: "/infosys.png", title: "Infosys" },
+    { image: "/wipro.png", title: "Wipro" },
+    { image: "/tcs.jpeg", title: "TCS" }
+  ];
+
   return (
     <div className="p-8">
-      <CardStructure subjects={subjects} />
+      <CardProvider subjects={subjects}>
+        <CardStructure title="Subject Wise MCQ's" />
+      </CardProvider>
+      
+      <CardProvider subjects={company}>
+        <CardStructure title="Company Wise MCQ's" />
+      </CardProvider>
     </div>
   );
 }
