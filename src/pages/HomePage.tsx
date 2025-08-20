@@ -9,9 +9,9 @@ export function Home() {
   ];
 
   const company = [
-    { image: "/infosys.png", title: "Infosys" },
+    { image: "/Infosys.png", title: "Infosys" },
     { image: "/wipro.png", title: "Wipro" },
-    { image: "/tcs.jpeg", title: "TCS" }
+    { image: "/TCS.png", title: "TCS" }
   ];
 
   return (
