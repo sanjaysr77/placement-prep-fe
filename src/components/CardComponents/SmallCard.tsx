@@ -5,12 +5,12 @@ type SmallCardProps = {
 
 export function SmallCard({ image, title }: SmallCardProps) {
   return (
-    <div className="bg-white shadow-md rounded-md p-4 w-28 h-28 flex flex-col items-center justify-center
+    <div className="bg-white shadow-md rounded-md p-2 sm:p-3 lg:p-4 w-full aspect-square flex flex-col items-center justify-center
         transition duration-200 ease-in-out
         hover:bg-gray-200 active:scale-95
         cursor-pointer">
-      <img src={image} alt={title} className="w-10 h-10 mb-2" />
-      <span className="text-sm font-medium text-black">{title}</span>
+      <img src={image} alt={title} className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-1 sm:mb-2" />
+      <span className="text-xs sm:text-sm lg:text-base font-medium text-black text-center leading-tight">{title}</span>
     </div>
   );
 }
