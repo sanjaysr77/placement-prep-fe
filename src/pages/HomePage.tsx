@@ -15,17 +15,34 @@ export function Home() {
     { image: "/TCS.png", title: "TCS" }
   ];
 
-  const [quizState, setQuizState] = useState<{ subject: string | null; questions: any[]; currentIndex: number; answers: Record<string, string>; submitted: boolean; loading: boolean; error: string | null }>({ subject: null, questions: [], currentIndex: 0, answers: {}, submitted: false, loading: false, error: null });
+  // Separate useState hooks for each piece of state
+  const [subject, setSubject] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     function handleStart(e: Event) {
       const custom = e as CustomEvent;
       const subj = (custom.detail?.subject as string) || "";
       if (!subj) return;
+      
       const normalized = subj.toLowerCase();
       const path = normalized === "dbms" ? "dbms" : normalized === "oops" ? "oops" : normalized === "os" ? "operating-systems" : "";
       if (!path) return;
-      setQuizState((s) => ({ ...s, subject: subj, loading: true, submitted: false, error: null, currentIndex: 0, answers: {}, questions: [] }));
+      
+      // Reset all state when starting a new quiz
+      setSubject(subj);
+      setLoading(true);
+      setSubmitted(false);
+      setError(null);
+      setCurrentIndex(0);
+      setAnswers({});
+      setQuestions([]);
+      
       fetch(`http://localhost:3000/v1/topicwise/${path}`, { headers: { "Content-Type": "application/json" } })
         .then(async (res) => {
           if (!res.ok) throw new Error("Failed to fetch questions");
@@ -33,37 +50,49 @@ export function Home() {
           const list = Array.isArray(data)
             ? data
             : Object.entries(data).map(([instruction, q]: [string, any]) => ({ instruction, ...(q as any) }));
-          setQuizState((s) => ({ ...s, questions: list, loading: false }));
+          setQuestions(list);
+          setLoading(false);
         })
         .catch((err) => {
-          setQuizState((s) => ({ ...s, loading: false, error: err.message || "Error fetching questions" }));
+          setLoading(false);
+          setError(err.message || "Error fetching questions");
         });
     }
     window.addEventListener("start-quiz", handleStart as any);
     return () => window.removeEventListener("start-quiz", handleStart as any);
   }, []);
 
-  const currentQuestion = useMemo(() => quizState.questions[quizState.currentIndex], [quizState.questions, quizState.currentIndex]);
+  const currentQuestion = useMemo(() => questions[currentIndex], [questions, currentIndex]);
 
   function handleSelect(option: string) {
     if (!currentQuestion?._id) return;
-    setQuizState((s) => ({ ...s, answers: { ...s.answers, [currentQuestion._id]: option } }));
+    setAnswers(prev => ({ ...prev, [currentQuestion._id]: option }));
   }
 
   function goNext() {
-    if (quizState.currentIndex < quizState.questions.length - 1) {
-      setQuizState((s) => ({ ...s, currentIndex: s.currentIndex + 1 }));
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1);
     }
   }
 
   function goBack() {
-    if (quizState.currentIndex > 0) {
-      setQuizState((s) => ({ ...s, currentIndex: s.currentIndex - 1 }));
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
     }
   }
 
   function handleSubmit() {
-    setQuizState((s) => ({ ...s, submitted: true }));
+    setSubmitted(true);
+  }
+
+  function resetQuiz() {
+    setSubject(null);
+    setQuestions([]);
+    setCurrentIndex(0);
+    setAnswers({});
+    setSubmitted(false);
+    setLoading(false);
+    setError(null);
   }
 
   return (
@@ -76,12 +105,12 @@ export function Home() {
         <CardStructure title="Company Wise MCQ's" />
       </CardProvider>
 
-      {quizState.subject && (
+      {subject && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur overflow-y-auto"
           onClick={() => {
-            if (quizState.submitted) {
-              setQuizState({ subject: null, questions: [], currentIndex: 0, answers: {}, submitted: false, loading: false, error: null });
+            if (submitted) {
+              resetQuiz();
             }
           }}
         >
@@ -90,21 +119,21 @@ export function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-white/5 backdrop-blur z-10">
-              <div className="text-white font-semibold">{quizState.subject} Quiz</div>
-              <button className="text-gray-300 hover:text-white cursor-pointer" onClick={() => setQuizState({ subject: null, questions: [], currentIndex: 0, answers: {}, submitted: false, loading: false, error: null })}>✕</button>
+              <div className="text-white font-semibold">{subject} Quiz</div>
+              <button className="text-gray-300 hover:text-white cursor-pointer" onClick={resetQuiz}>✕</button>
             </div>
 
             <div className="px-6 py-5 flex-1 overflow-y-auto">
-              {quizState.loading && <div className="text-gray-200">Loading questions...</div>}
-              {quizState.error && <div className="text-red-300">{quizState.error}</div>}
+              {loading && <div className="text-gray-200">Loading questions...</div>}
+              {error && <div className="text-red-300">{error}</div>}
 
-              {!quizState.loading && !quizState.error && quizState.questions.length > 0 && !quizState.submitted && (
+              {!loading && !error && questions.length > 0 && !submitted && (
                 <div className="space-y-6">
-                  <div className="text-gray-200 text-sm">Question {quizState.currentIndex + 1} of {quizState.questions.length}</div>
+                  <div className="text-gray-200 text-sm">Question {currentIndex + 1} of {questions.length}</div>
                   <div className="text-white text-lg font-medium">{currentQuestion?.question}</div>
                   <div className="grid gap-3">
                     {currentQuestion?.options?.map((opt: string) => {
-                      const checked = quizState.answers[currentQuestion._id] === opt;
+                      const checked = answers[currentQuestion._id] === opt;
                       return (
                         <label key={opt} className={`flex items-center gap-3 p-3 rounded-md border ${checked ? "border-blue-500 bg-blue-500/10" : "border-white/10 bg-white/5"} text-white`}>
                           <input type="radio" name={`q-${currentQuestion._id}`} className="accent-blue-500" checked={checked} onChange={() => handleSelect(opt)} />
@@ -115,8 +144,8 @@ export function Home() {
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <button className="px-4 py-2 rounded-md bg-gray-700 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed" disabled={quizState.currentIndex === 0} onClick={goBack}>Back</button>
-                    {quizState.currentIndex < quizState.questions.length - 1 ? (
+                    <button className="px-4 py-2 rounded-md bg-gray-700 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed" disabled={currentIndex === 0} onClick={goBack}>Back</button>
+                    {currentIndex < questions.length - 1 ? (
                       <button className="px-4 py-2 rounded-md bg-blue-600 text-white cursor-pointer" onClick={goNext}>Next</button>
                     ) : (
                       <button className="px-4 py-2 rounded-md bg-green-600 text-white cursor-pointer" onClick={handleSubmit}>Submit</button>
@@ -125,12 +154,12 @@ export function Home() {
                 </div>
               )}
 
-              {!quizState.loading && !quizState.error && quizState.submitted && (
+              {!loading && !error && submitted && (
                 <div className="space-y-4 text-white">
                   <div className="text-xl font-semibold">Results</div>
                   <div className="space-y-3">
-                    {quizState.questions.map((q) => {
-                      const chosen = quizState.answers[q._id];
+                    {questions.map((q) => {
+                      const chosen = answers[q._id];
                       const isCorrect = q.correctAnswer ? q.correctAnswer === chosen : undefined;
                       return (
                         <div key={q._id} className="p-3 rounded-md border border-white/10 bg-white/5">
